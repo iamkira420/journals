@@ -5,7 +5,7 @@
  * See articlemodel.h for the full class description.
  */
 
-#include "articlemodel.h"
+#include "articleModel.h"
 
 #include <QDate>
 #include <QColor>

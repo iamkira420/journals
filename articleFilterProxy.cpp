@@ -5,8 +5,8 @@
  * See articlefilterproxy.h for the full class description.
  */
 
-#include "articlefilterproxy.h"
-#include "articlemodel.h"
+#include "articleFilterProxy.h"
+#include "articleModel.h"
 
 #include <QRegularExpression>
 

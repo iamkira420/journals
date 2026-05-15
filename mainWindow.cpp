@@ -1,14 +1,14 @@
 /**
- * @file mainwindow.cpp
+ * @file mainWindow.cpp
  * @brief Implementation of MainWindow.
  *
  * Wires together ArticleModel, ArticleFilterProxy, and the UI widgets
- * described in mainwindow.h.
+ * described in mainWindow.h.
  */
 
-#include "mainwindow.h"
-#include "articlemodel.h"
-#include "articlefilterproxy.h"
+#include "mainWindow.h"
+#include "articleModel.h"
+#include "articleFilterProxy.h"
 
 #include <QTableView>
 #include <QHeaderView>
