@@ -1,8 +1,7 @@
 /**
- * @file articlemodel.cpp
+ * @author Lutho Mbonsiwa
+ * @date 15 May 2026
  * @brief Implementation of ArticleModel.
- *
- * See articlemodel.h for the full class description.
  */
 
 #include "articleModel.h"
@@ -12,9 +11,8 @@
 #include <QBrush>
 #include <QMessageBox>
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // Construction
-// ─────────────────────────────────────────────────────────────────────────────
 
 ArticleModel::ArticleModel(QObject *parent)
     : QStandardItemModel(0, Col_COUNT, parent)
@@ -31,34 +29,21 @@ ArticleModel::ArticleModel(QObject *parent)
     });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Public interface
-// ─────────────────────────────────────────────────────────────────────────────
 
-bool ArticleModel::addArticle(const QString &author,
-                               int            year,
-                               const QString &title,
-                               const QString &journal,
-                               int            volume,
-                               int            issue,
-                               const QString &pages)
-{
-    // ── Year validation ───────────────────────────────────────────────────
+bool ArticleModel::addArticle(const QString &author, int year, const QString &title, const QString &journal, int volume, int issue, const QString &pages) {
+
+    // Year validation
     const int currentYear = QDate::currentDate().year();
     if (year > currentYear) {
-        // Inform the user clearly; do not silently clamp the value.
-        QMessageBox::warning(
-            nullptr,
-            "Invalid Year",
-            QString("The publication year %1 is in the future.\n"
-                    "Please enter a year no later than %2.")
-                .arg(year)
-                .arg(currentYear)
+        // Informs the user clearly for faulty values
+        QMessageBox::warning(nullptr,"Invalid Year",
+            QString("The publication year %1 is in the future.\n" "Please enter a year no later than %2.").arg(year).arg(currentYear)
         );
         return false;   // Caller should keep the form open for correction.
     }
 
-    // ── Build a row of QStandardItems ─────────────────────────────────────
+    // Build a row of QStandardItems  
     // We store Year, Volume, and Issue with Qt::UserRole as integers so that
     // numeric sorting works correctly (lexicographic "9" > "10" is wrong).
 
@@ -76,22 +61,20 @@ bool ArticleModel::addArticle(const QString &author,
     itemIssue->setData(issue,  Qt::UserRole);
 
     // Make all cells editable (default) — setData() will enforce constraints
-    appendRow({ itemAuthor, itemYear, itemTitle,
-                itemJournal, itemVolume, itemIssue, itemPages });
+    appendRow({ itemAuthor, itemYear, itemTitle, itemJournal, itemVolume, itemIssue, itemPages });
 
     return true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+ 
 // QAbstractItemModel overrides
-// ─────────────────────────────────────────────────────────────────────────────
-
+ 
 QVariant ArticleModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
 
-    // ── Background colouring ──────────────────────────────────────────────
+    // Background colouring 
     if (role == Qt::BackgroundRole) {
         // Read the year from the same row, Col_Year column
         const QModelIndex yearIndex = this->index(index.row(), Col_Year);
@@ -109,7 +92,7 @@ QVariant ArticleModel::data(const QModelIndex &index, int role) const
         return {};  // No custom background
     }
 
-    // ── Alignment: centre numeric columns ────────────────────────────────
+    // Alignment - centre numeric columns 
     if (role == Qt::TextAlignmentRole) {
         switch (index.column()) {
         case Col_Year:
@@ -121,7 +104,7 @@ QVariant ArticleModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    // All other roles: delegate to base class
+    // All other roles: delegated to base class
     return QStandardItemModel::data(index, role);
 }
 
@@ -130,7 +113,7 @@ bool ArticleModel::setData(const QModelIndex &index, const QVariant &value, int 
     if (!index.isValid() || role != Qt::EditRole)
         return QStandardItemModel::setData(index, value, role);
 
-    // ── Validate year edits ───────────────────────────────────────────────
+    // Validate year edits  
     if (index.column() == Col_Year) {
         bool ok = false;
         const int newYear = value.toInt(&ok);
@@ -150,8 +133,7 @@ bool ArticleModel::setData(const QModelIndex &index, const QVariant &value, int 
         QStandardItemModel::setData(index, QString::number(newYear), Qt::DisplayRole);
         QStandardItemModel::setData(index, newYear, Qt::UserRole);
 
-        // Notify the view that the background of the whole row may have changed
-        // by emitting dataChanged for every cell in the row.
+        // Notify the view that the background of the whole row may have changed by emitting dataChanged for every cell in the row.
         const QModelIndex rowStart = this->index(index.row(), 0);
         const QModelIndex rowEnd   = this->index(index.row(), Col_COUNT - 1);
         emit dataChanged(rowStart, rowEnd, { Qt::BackgroundRole });
@@ -159,7 +141,7 @@ bool ArticleModel::setData(const QModelIndex &index, const QVariant &value, int 
         return true;
     }
 
-    // ── Keep UserRole integers in sync for Volume / Issue ─────────────────
+    // Keep UserRole integers in sync for Volume / Issue  
     if (index.column() == Col_Volume || index.column() == Col_Issue) {
         bool ok = false;
         const int intVal = value.toInt(&ok);
@@ -173,9 +155,8 @@ bool ArticleModel::setData(const QModelIndex &index, const QVariant &value, int 
     return QStandardItemModel::setData(index, value, role);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private helpers
-// ─────────────────────────────────────────────────────────────────────────────
+ 
+// Private helperss
 
 /*static*/
 QColor ArticleModel::colourForYear(int year)

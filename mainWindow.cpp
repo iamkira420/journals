@@ -1,9 +1,9 @@
 /**
- * @file mainWindow.cpp
  * @brief Implementation of MainWindow.
+ * @author Lutho Mboniswa
+ * @date 15 May 2026
  *
- * Wires together ArticleModel, ArticleFilterProxy, and the UI widgets
- * described in mainWindow.h.
+ * Wires together ArticleModel, ArticleFilterProxy, and the UI widgets as described in mainWindow.h.
  */
 
 #include "mainWindow.h"
@@ -31,14 +31,12 @@
 #include <QFont>
 #include <QSizePolicy>
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Construction
-// ─────────────────────────────────────────────────────────────────────────────
+// Construction and layout are handled in the MainWindow constructor and helper functions below
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    // Create model and proxy first — widgets may need them during layout
+    // Create model and proxy first - widgets may need them during layout
     m_model = new ArticleModel(this);
     m_proxy = new ArticleFilterProxy(this);
     m_proxy->setSourceModel(m_model);
@@ -50,13 +48,11 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->showMessage("Ready  •  Double-click a cell to edit in-place");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Layout construction
-// ─────────────────────────────────────────────────────────────────────────────
 
 void MainWindow::buildLayout()
 {
-    // ── Central splitter: left panel | table ─────────────────────────────
+    // left panel | table 
     auto *splitter = new QSplitter(Qt::Horizontal, this);
     splitter->setHandleWidth(4);
 
@@ -69,8 +65,8 @@ void MainWindow::buildLayout()
 
     splitter->addWidget(leftPanel);
     splitter->addWidget(m_view);
-    splitter->setStretchFactor(0, 0);   // left panel does not stretch
-    splitter->setStretchFactor(1, 1);   // table view takes all extra space
+    splitter->setStretchFactor(0, 0); // left panel does not stretch as it is fixed
+    splitter->setStretchFactor(1, 1); // table view takes all extra space
 
     setCentralWidget(splitter);
 }
@@ -82,7 +78,7 @@ QWidget *MainWindow::buildLeftPanel()
     outer->setContentsMargins(8, 8, 8, 8);
     outer->setSpacing(6);
 
-    // ── Input fields (QFormLayout for label-widget pairs) ─────────────────
+    // Input fields (QFormLayout for label-widget pairs)
     auto *formGroup = new QGroupBox("Article Details", panel);
     auto *form      = new QFormLayout(formGroup);
     form->setRowWrapPolicy(QFormLayout::WrapAllRows);
@@ -93,10 +89,10 @@ QWidget *MainWindow::buildLeftPanel()
     m_authorEdit->setPlaceholderText("e.g. Smith, J.");
     form->addRow("Author", m_authorEdit);
 
-    // Year — constrained to [1000, current year]
+    // Year - constrained to [1000, current year]
     m_yearSpin = new QSpinBox(formGroup);
     m_yearSpin->setRange(1000, QDate::currentDate().year());
-    m_yearSpin->setValue(QDate::currentDate().year());  // sensible default
+    m_yearSpin->setValue(QDate::currentDate().year());  // default
     form->addRow("Year", m_yearSpin);
 
     // Title
@@ -126,7 +122,7 @@ QWidget *MainWindow::buildLeftPanel()
 
     outer->addWidget(formGroup);
 
-    // ── Add / Remove buttons ──────────────────────────────────────────────
+    // Add / Remove buttons 
     auto *addBtn    = new QPushButton("Add",    panel);
     auto *removeBtn = new QPushButton("Remove", panel);
 
@@ -138,13 +134,13 @@ QWidget *MainWindow::buildLeftPanel()
     outer->addWidget(addBtn);
     outer->addWidget(removeBtn);
 
-    // ── Separator ─────────────────────────────────────────────────────────
+    // Separator 
     auto *line = new QFrame(panel);
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
     outer->addWidget(line);
 
-    // ── Filter group ──────────────────────────────────────────────────────
+    // Filter group 
     auto *filterGroup = new QGroupBox("Filter", panel);
     auto *filterVBox  = new QVBoxLayout(filterGroup);
     filterVBox->setSpacing(4);
@@ -156,8 +152,8 @@ QWidget *MainWindow::buildLeftPanel()
 
     // Field selector combo
     m_filterField = new QComboBox(filterGroup);
-    // Items must match column indices in ArticleModel::Column.
-    // Pages is excluded per the spec — it is not added here.
+
+    // Items must match column indices in ArticleModel::Column
     m_filterField->addItem("Author",  ArticleModel::Col_Author);
     m_filterField->addItem("Year",    ArticleModel::Col_Year);
     m_filterField->addItem("Title",   ArticleModel::Col_Title);
@@ -179,7 +175,7 @@ QWidget *MainWindow::buildLeftPanel()
     // Push everything to the top
     outer->addStretch();
 
-    // ── Wire up signals ───────────────────────────────────────────────────
+    // Wire up signals
     connect(addBtn,    &QPushButton::clicked, this, &MainWindow::onAdd);
     connect(removeBtn, &QPushButton::clicked, this, &MainWindow::onRemove);
     connect(findBtn,   &QPushButton::clicked, this, &MainWindow::onFind);
@@ -196,17 +192,16 @@ void MainWindow::buildTableView()
     m_view = new QTableView(this);
     m_view->setModel(m_proxy);  // View sees the proxy (sorted + filtered)
 
-    // ── Behaviour ─────────────────────────────────────────────────────────
-    m_view->setSortingEnabled(true);                    // click headers to sort
+    // Behaviour 
+    m_view->setSortingEnabled(true); // click headers to sort
     m_view->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_view->setSelectionMode(QAbstractItemView::ExtendedSelection); // Ctrl/Shift select
-    m_view->setEditTriggers(QAbstractItemView::DoubleClicked |
-                             QAbstractItemView::SelectedClicked);
-    m_view->setAlternatingRowColors(false);             // we handle colour ourselves
+    m_view->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
+    m_view->setAlternatingRowColors(false); // we handle colour ourselves
     m_view->setWordWrap(false);
     m_view->setShowGrid(true);
 
-    // ── Header tweaks ─────────────────────────────────────────────────────
+    // Header tweaks 
     QHeaderView *hh = m_view->horizontalHeader();
     hh->setSectionResizeMode(ArticleModel::Col_Author,  QHeaderView::Stretch);
     hh->setSectionResizeMode(ArticleModel::Col_Title,   QHeaderView::Stretch);
@@ -222,27 +217,24 @@ void MainWindow::buildTableView()
     m_view->verticalHeader()->setVisible(false);
     m_view->verticalHeader()->setDefaultSectionSize(24);
 
-    // Default sort: by Author ascending
+    // Default sort: by Author ascending order
     m_proxy->sort(ArticleModel::Col_Author, Qt::AscendingOrder);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Slot implementations
-// ─────────────────────────────────────────────────────────────────────────────
 
 void MainWindow::onAdd()
 {
-    // ── Basic non-empty validation ─────────────────────────────────────────
+    // Basic non-empty validation 
     if (m_authorEdit->text().trimmed().isEmpty() ||
         m_titleEdit->text().trimmed().isEmpty()  ||
         m_journalEdit->text().trimmed().isEmpty())
     {
-        QMessageBox::warning(this, "Missing Data",
-                             "Author, Title, and Journal fields cannot be empty.");
+        QMessageBox::warning(this, "Missing Data", "Author, Title, and Journal fields cannot be empty.");
         return;
     }
 
-    // ── Attempt to add (model will validate the year) ─────────────────────
+    // Attempt to add (model will validate the year)
     const bool ok = m_model->addArticle(
         m_authorEdit->text().trimmed(),
         m_yearSpin->value(),
@@ -254,19 +246,17 @@ void MainWindow::onAdd()
     );
 
     if (ok) {
-        showStatusMessage(QString("Article by \"%1\" added successfully.")
-                              .arg(m_authorEdit->text().trimmed()));
+        showStatusMessage(QString("Article by \"%1\" added successfully.").arg(m_authorEdit->text().trimmed()));
         clearInputs();
     }
-    // If !ok, the model already showed a QMessageBox explaining why.
+    // If not ok (!ok), the model already showed a QMessageBox explaining why
 }
 
 void MainWindow::onRemove()
 {
     QItemSelectionModel *sel = m_view->selectionModel();
     if (!sel->hasSelection()) {
-        QMessageBox::information(this, "No Selection",
-                                 "Please select one or more rows to remove.");
+        QMessageBox::information(this, "No Selection", "Please select one or more rows to remove.");
         return;
     }
 
@@ -279,11 +269,10 @@ void MainWindow::onRemove()
         sourceRows.append(srcIdx.row());
     }
 
-    // Sort descending so removal doesn't invalidate earlier indices
+    // Sort in descending order so that removal doesn't invalidate earlier indices
     std::sort(sourceRows.begin(), sourceRows.end(), std::greater<int>());
     // Remove duplicates (selectedRows() should not give duplicates, but be safe)
-    sourceRows.erase(std::unique(sourceRows.begin(), sourceRows.end()),
-                     sourceRows.end());
+    sourceRows.erase(std::unique(sourceRows.begin(), sourceRows.end()), sourceRows.end());
 
     const int count = sourceRows.size();
     const auto answer = QMessageBox::question(
@@ -304,7 +293,7 @@ void MainWindow::onFind()
 {
     const QString pattern = m_filterEdit->text().trimmed();
     if (pattern.isEmpty()) {
-        // Nothing typed — treat as a reset
+        // if nothing is typed - treat as a reset
         m_proxy->clearFilter();
         showStatusMessage("Filter cleared — showing all records.");
         return;
@@ -315,10 +304,7 @@ void MainWindow::onFind()
     m_proxy->setFilter(pattern, column);
 
     const int visible = m_proxy->rowCount();
-    showStatusMessage(QString("Filter applied — %1 record(s) match \"%2\" in %3.")
-                          .arg(visible)
-                          .arg(pattern)
-                          .arg(m_filterField->currentText()));
+    showStatusMessage(QString("Filter applied — %1 record(s) match \"%2\" in %3.").arg(visible).arg(pattern).arg(m_filterField->currentText()));
 }
 
 void MainWindow::onReset()
@@ -328,9 +314,7 @@ void MainWindow::onReset()
     showStatusMessage("Filter cleared — showing all records.");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Private helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 void MainWindow::clearInputs()
 {
@@ -353,38 +337,24 @@ void MainWindow::showStatusMessage(const QString &msg, int timeoutMs)
 
 void MainWindow::seedSampleData()
 {
-    // Pre-populate with representative articles spanning different colour bands.
-    // Current year is obtained dynamically so colours stay correct in future.
+    // Pre-populate with representative articles spanning different colour bands as requested in the assignment specs
+    // Current year is obtained dynamically so colours stay correct in future additions
     const int cur = QDate::currentDate().year();
 
     // Green rows (within last 5 years)
-    m_model->addArticle("Zhang, L. & Wang, H.",  cur - 1,
-                         "Deep Learning for Protein Folding",
-                         "Nature Methods",          19, 3, "301-315");
+    m_model->addArticle("Zhang, L. & Wang, H.", cur - 1, "Deep Learning for Protein Folding", "Nature Methods", 19, 3, "301-315");
 
-    m_model->addArticle("Müller, K. et al.",      cur - 3,
-                         "Quantum Error Correction at Scale",
-                         "Physical Review Letters", 131, 7, "071401");
+    m_model->addArticle("Müller, K. et al.", cur - 3, "Quantum Error Correction at Scale","Physical Review Letters", 131, 7, "071401");
 
-    m_model->addArticle("Okonkwo, A.",             cur - 4,
-                         "Sub-Saharan Climate Modelling",
-                         "Climate Dynamics",        61, 2, "889-904");
+    m_model->addArticle("Okonkwo, A.", cur - 4, "Sub-Saharan Climate Modelling", "Climate Dynamics", 61, 2, "889-904");
 
     // Neutral rows (between 5 and 10 years ago)
-    m_model->addArticle("Hernandez, M. & Liu, Y.", cur - 7,
-                         "Graph Neural Networks: A Review",
-                         "IEEE Trans. Neural Netw.", 34, 1, "44-65");
-
-    m_model->addArticle("Petrov, S.",               cur - 8,
-                         "Topological Insulators in 2D",
-                         "Science",                 341, 6148, "153-157");
+    m_model->addArticle("Hernandez, M. & Liu, Y.", cur - 7, "Graph Neural Networks: A Review", "IEEE Trans. Neural Netw.", 34, 1, "44-65");
+    m_model->addArticle("Phillip K. Dick", cur - 9, "Do Androids Dream of Electric Sheep?", "Science Fiction", 100, 12, "123406");
+    m_model->addArticle("Petrov, S.", cur - 8, "Topological Insulators in 2D", "Science", 341, 6148, "153-157");
 
     // Red rows (older than 10 years)
-    m_model->addArticle("Smith, J. & Brown, T.",   cur - 12,
-                         "PageRank Algorithm Analysis",
-                         "ACM Comput. Surv.",        45, 4, "1-32");
-
-    m_model->addArticle("Nakamura, R.",             cur - 15,
-                         "Blue LED Efficiency Breakthroughs",
-                         "Applied Physics Letters",  88, 10, "101106");
+    m_model->addArticle("Smith, J. & Brown, T.", cur - 12, "PageRank Algorithm Analysis", "ACM Comput. Surv.", 45, 4, "1-32");
+    m_model->addArticle("Hirohiko Araki, I", cur - 14, "Jojo's Bizarre Adventure", "Manga and Anime", 120, 9, "102104");
+    m_model->addArticle("Nakamura, R.", cur - 15, "Blue LED Efficiency Breakthroughs", "Applied Physics Letters", 88, 10, "101106");
 }
