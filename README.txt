@@ -1,6 +1,7 @@
 # Building
 FYI I used VSCode for building and ran the application with qmake, I'm on linux and my PC can't handle a 
 Windows VM for testing on a windows OS.  
+Also, some of the included files were auto-generated after compiling the program (usual suspects)*
 
 # Prerequisites
 
